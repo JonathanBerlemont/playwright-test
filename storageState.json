@@ -1,0 +1,47 @@
+{
+  "cookies": [
+    {
+      "name": "_ga_9YBNNKZED0",
+      "value": "GS2.1.s1775655912$o1$g0$t1775655912$j60$l0$h0",
+      "domain": ".japcm.devops",
+      "path": "/",
+      "expires": 1810215912.692755,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga",
+      "value": "GA1.1.271578353.1775655913",
+      "domain": ".japcm.devops",
+      "path": "/",
+      "expires": 1810215912.693062,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://japcm.devops",
+      "localStorage": [
+        {
+          "name": "uc_user_interaction",
+          "value": "false"
+        },
+        {
+          "name": "Drupal.olivero.stickyHeaderState",
+          "value": "{\"value\":false,\"expiry\":1775676072540}"
+        },
+        {
+          "name": "uc_settings",
+          "value": "{\"controllerId\":\"f91bc7defa5c271efc8c883523b1e4713d44930262a4b2b552de171778ed9a38\",\"id\":\"oSmltRv91ZXMvN\",\"language\":\"en\",\"services\":[{\"history\":[{\"action\":\"onInitialPageLoad\",\"language\":\"en\",\"status\":true,\"timestamp\":1775655912794,\"type\":\"implicit\",\"versions\":{\"application\":\"SDK-4.61.0\",\"service\":\"40.18.46\",\"settings\":\"1.1.2\"}}],\"id\":\"H1Vl5NidjWX\",\"processorId\":\"2c2405731408533b3e65a7833fef5a6203404d8aac026cdfee815427f0ac9da1\",\"status\":true}],\"version\":\"1.1.2\"}"
+        },
+        {
+          "name": "uc_ui_version",
+          "value": "3.97.0"
+        }
+      ]
+    }
+  ]
+}
