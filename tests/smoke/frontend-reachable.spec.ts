@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe("Smoke — Frontend", () => {
+test.describe("is the frontend reachable", () => {
   test("home page loads without error", async ({ page }) => {
     const response = await page.goto("/");
 

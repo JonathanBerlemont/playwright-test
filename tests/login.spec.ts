@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { DrupalBasePage } from "../../pages/base/DrupalBasePage";
+import { DrupalBasePage } from "../pages/base/DrupalBasePage";
 
 test.describe("Admin login", () => {
   test("valid credentials reach the admin dashboard", async ({ page }) => {
-    const admin = new DrupalBasePage(page);    
+    const admin = new DrupalBasePage(page);  
     await admin.login(process.env.ADMIN_USER!, process.env.ADMIN_PASS!);
 
     await expect(admin.adminToolbar).toBeVisible();
