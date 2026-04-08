@@ -57,20 +57,8 @@ export class DrupalBasePage {
   // Admin navigation helpers
   // ---------------------------------------------------------------------------
 
-  async gotoAdmin(path: string) {
-    await this.page.goto(`/admin/${path}`);
-  }
-
   /** Click an admin toolbar item by its visible label. */
   async clickToolbarItem(label: string) {
     await this.adminToolbar.getByRole("link", { name: label }).click();
-  }
-
-  /** Wait for Drupal's Ajax throbber to disappear. */
-  async waitForAjax() {
-    await this.page.waitForFunction(() => {
-      const throbbers = document.querySelectorAll(".ajax-progress");
-      return throbbers.length === 0;
-    });
   }
 }
