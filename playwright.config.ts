@@ -44,7 +44,6 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         storageState: 'storageState.json',
-        ignoreHTTPSErrors: true,
       },
       dependencies: ['setup'],
     },
@@ -53,7 +52,6 @@ export default defineConfig({
       use: {
         ...devices['Desktop Firefox'],
         storageState: 'storageState.json',
-        ignoreHTTPSErrors: true,
       },
       dependencies: ['setup'],
     },
@@ -62,7 +60,6 @@ export default defineConfig({
       use: {
         ...devices['Desktop Safari'],
         storageState: 'storageState.json',
-        ignoreHTTPSErrors: true,
       },
       dependencies: ['setup'],
     },

@@ -4,6 +4,7 @@ import { DrupalBasePage } from "../pages/base/DrupalBasePage";
 test.describe("Admin login", () => {
   test("valid credentials reach the admin dashboard", async ({ page }) => {
     const admin = new DrupalBasePage(page);  
+    await expect(admin.adminToolbar).not.toBeVisible();
     await admin.login(process.env.ADMIN_USER!, process.env.ADMIN_PASS!);
 
     await expect(admin.adminToolbar).toBeVisible();

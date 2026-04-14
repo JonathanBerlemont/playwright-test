@@ -13,7 +13,7 @@ export type FixtureRow = Record<string, string>;
  * @param filePath   Path to the .csv file (relative to project root or absolute)
  *
  * @example
- * const rows = loadCsv("fixtures/article.fixtures.csv");
+ * const rows = loadCsv("content/article.fixtures.csv");
  */
 export function loadCsv(filePath: string): FixtureRow[] {
   const resolved = path.resolve("fixtures/"+filePath);
@@ -25,7 +25,7 @@ export function loadCsv(filePath: string): FixtureRow[] {
   const fileContent = fs.readFileSync(resolved, "utf-8");
 
   const parsed = Papa.parse<Record<string, string>>(fileContent, {
-    header: true,   // use first row as keys
+    header: true,
     skipEmptyLines: true,
     transformHeader: (h) => h.trim(),
     transform: (v) => v.trim(),
