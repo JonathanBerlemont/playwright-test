@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { DrupalBasePage } from "../pages/base/DrupalBasePage";
+import { BasePage } from "../pages/base/base-page";
 
 test.describe("Admin login", () => {
   test("valid credentials reach the admin dashboard", async ({ page }) => {
-    const admin = new DrupalBasePage(page);  
+    const admin = new BasePage(page);
     await expect(admin.adminToolbar).not.toBeVisible();
     await admin.login(process.env.ADMIN_USER!, process.env.ADMIN_PASS!);
 
@@ -11,14 +11,14 @@ test.describe("Admin login", () => {
   });
 
   test("invalid credentials are rejected", async ({ page }) => {
-    const admin = new DrupalBasePage(page);  
+    const admin = new BasePage(page);
     await admin.login('wrong-admin', 'wrong-pass');
 
     await expect(page.locator(".messages--error")).toBeVisible();
   });
 
   test("logout redirects away from admin", async ({ page }) => {
-    const admin = new DrupalBasePage(page);
+    const admin = new BasePage(page);
     await admin.login(process.env.ADMIN_USER!, process.env.ADMIN_PASS!);
     await admin.logout();
 
