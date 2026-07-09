@@ -1,32 +1,29 @@
-import { type Locator } from "@playwright/test";
+import { type Locator, type Page } from "@playwright/test";
 import { TextField } from "../text-field";
 import { CkEditorField } from "../ckeditor-field";
-import type { CheckboxDrupalField, RadioDrupalField, SelectDrupalField, TextDrupalField } from "./field.interface";
+import type { TextDrupalField } from "./field.interface";
 
-export type { CheckboxDrupalField, RadioDrupalField, SelectDrupalField, TextDrupalField };
-export type FieldKind = "text" | "textarea" | "ckeditor" | "date" | "checkbox" | "radio" | "select";
+export type { TextDrupalField };
+export type FieldKind = "text" | "ckeditor";
+export type FieldScope = Locator | Page;
 
-export function createDrupalField(locator: Locator, kind: "text" | "textarea" | "ckeditor" | "date"): TextDrupalField;
-export function createDrupalField(locator: Locator, kind: "checkbox"): CheckboxDrupalField;
-export function createDrupalField(locator: Locator, kind: "radio"): RadioDrupalField;
-export function createDrupalField(locator: Locator, kind: "select"): SelectDrupalField;
-export function createDrupalField(locator: Locator, kind: FieldKind): TextDrupalField | CheckboxDrupalField | RadioDrupalField | SelectDrupalField {
+/**
+ * @param scope           Where to look — a region Locator, or the whole Page.
+ * @param name             Drupal machine name (e.g. "title", "body").
+ * @param kind              Which widget class to construct.
+ * @param explicitLocator   Bypasses the field class's naming convention
+ *                          entirely, for a genuinely nonstandard field.
+ */
+export function createDrupalField(
+  scope: FieldScope,
+  name: string,
+  kind: FieldKind,
+  explicitLocator?: Locator
+): TextDrupalField {
   switch (kind) {
     case "text":
-      return new TextField(locator);
-    case "textarea":
-      return new TextareaField(locator);
+      return new TextField(scope, name, explicitLocator);
     case "ckeditor":
-      return new CkEditorField(locator);
-    case "date":
-      return new DateField(locator);
-    case "checkbox":
-      return new CheckboxField(locator);
-    case "radio":
-      return new RadioField(locator);
-    case "select":
-      return new SelectField(locator);
-    default:
-      return new TextField(locator);
+      return new CkEditorField(scope, name, explicitLocator);
   }
 }

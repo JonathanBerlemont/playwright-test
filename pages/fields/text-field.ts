@@ -1,12 +1,22 @@
-import { type Locator } from "@playwright/test";
+import { type Locator, type Page } from "@playwright/test";
 import { DrupalFieldBase } from "./base/drupal-field.base";
 
 export class TextField extends DrupalFieldBase<string> {
-  constructor(locator: Locator) {
-    super(locator);
+  protected buildLocator(scope: Locator | Page, name: string): Locator {
+    const dashed = name.replace(/_/g, "-");
+    // Covers a single-value field widget (edit-title-0-value), a base-field
+    // input without the -0-value suffix (edit-status), and plain exposed
+    // filter inputs (edit-title on /admin/content).
+    return scope.locator(
+      [
+        `[data-drupal-selector='edit-${dashed}-0-value']`,
+        `[data-drupal-selector='edit-${dashed}']`,
+        `#edit-${dashed}`,
+      ].join(", ")
+    );
   }
 
-  async fill(value: string): Promise<void> {    
+  async fill(value: string): Promise<void> {
     await this.locator.fill(value);
   }
 

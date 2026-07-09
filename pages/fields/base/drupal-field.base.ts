@@ -1,29 +1,36 @@
-import { type Locator } from "@playwright/test";
+import { type Locator, type Page } from "@playwright/test";
 import { type DrupalField } from "./field.interface";
 
 /**
- * Base class for all Drupal field widgets. Provides a generic getLabel()
- * default based on the field's `id` -> `label[for=id]`, which covers most
- * simple widgets (text, textarea, select, checkbox).
+ * Base class for all Drupal field widgets.
  *
- * Override getLabel() in any field class whose label isn't shaped that way —
- * e.g. a radio/checkboxes group uses a <fieldset><legend> instead of a
- * for-attribute label, CKEditor's locator is a wrapper div rather than a
- * single input with an id, a date composite may cover several sub-inputs.
+ * Each concrete field class builds its OWN locator from a machine name via
+ * buildLocator() — a text input, a CKEditor wrapper div, a radio group's
+ * fieldset, etc. all have different DOM shapes, so there is no shared,
+ * generic "find a field by name" strategy here. That responsibility lives
+ * on the field class that actually knows its own structure.
  */
 export abstract class DrupalFieldBase<T> implements DrupalField<T> {
   readonly locator: Locator;
 
-  constructor(locator: Locator) {
-    const mainRegion = locator.page().locator(".layout-region--main");
-    this.locator = mainRegion.locator(locator).first();
+  constructor(scope: Locator | Page, name: string, explicitLocator?: Locator) {
+    // explicitLocator lets a caller bypass the naming convention entirely
+    // for a genuinely nonstandard field (renamed widget, unusual markup).
+    this.locator = explicitLocator ?? this.buildLocator(scope, name);
   }
+
+  /** Resolves this field's locator from its Drupal machine name, within `scope`. */
+  protected abstract buildLocator(scope: Locator | Page, name: string): Locator;
 
   abstract fill(value: T): Promise<void>;
   abstract getValue(): Promise<T>;
   abstract getError(): Promise<string | null>;
   abstract clear(): Promise<void>;
 
+  /**
+   * Default label lookup: id -> label[for=id]. Correct for most simple
+   * widgets. Override in any field class whose label isn't shaped that way.
+   */
   async getLabel(): Promise<string> {
     const id = await this.locator.getAttribute("id");
     if (!id) return "";

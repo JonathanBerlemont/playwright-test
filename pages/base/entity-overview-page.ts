@@ -28,10 +28,10 @@ export abstract class EntityOverviewPage extends BasePage {
   }
 
   async clickEditInRow(title: string): Promise<void> {
-    await this.getRowByTitle(title).getByRole("link", { name: "Edit" }).click();
+    await this.getRowByTitle(title).locator('li.edit').getByRole("link", { name: "Edit" }).click();
   }
 
   async clickDeleteInRow(title: string): Promise<void> {
-    await this.getRowByTitle(title).getByRole("link", { name: "Delete" }).click();
+    await this.getRowByTitle(title).locator('li.delete').getByRole("link", { name: "Delete" }).click();
   }
 }

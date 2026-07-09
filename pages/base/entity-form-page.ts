@@ -4,34 +4,46 @@ import {
   createDrupalField,
   type FieldKind,
   type TextDrupalField,
-  type CheckboxDrupalField,
-  type RadioDrupalField,
-  type SelectDrupalField,
 } from "../fields/base/field-factory";
 
 export interface FieldLocatorOptions {
   /**
-   * Override the default locator strategy for this field. Needed whenever a
-   * field doesn't follow Drupal's usual naming convention — renamed labels,
-   * custom widgets, prefilled/disabled fields with unusual markup, etc.
+   * Bypasses the field class's own naming convention entirely. Needed only
+   * for a genuinely nonstandard field (renamed widget, unusual markup) —
+   * the field class itself owns how it normally finds its locator.
    */
   locator?: string;
+  /**
+   * Constrain the lookup to a named region registered via registerRegion()
+   * (e.g. "main", "footer"). Falls back to defaultFieldRegion if not given,
+   * or the whole page if neither is set.
+   */
+  region?: string;
 }
 
 /**
  * Shared behavior for any Drupal fieldable-entity add/edit form
  * (nodes, taxonomy terms, users, media, etc.).
  *
- * Deliberately does NOT declare any concrete fields — bundles/content types
- * differ in which fields they expose, what they're called, and whether
- * they're editable. Concrete pages (NodeFormPage, TaxonomyFormPage, ...) only
- * add navigation. Tests use field()/hasField() with the machine name of
- * whatever field they actually need for that specific bundle.
+ * Deliberately does NOT declare any concrete fields, and does NOT know how
+ * to locate one — that's owned by each field class (TextField, CkEditorField,
+ * ...) via its own buildLocator(). This page only knows WHERE to look
+ * (region scoping) and WHICH widget class to hand the lookup to.
  */
 export abstract class EntityFormPage extends BasePage {
   readonly saveButton: Locator;
   readonly deleteButton: Locator;
   readonly deleteConfirmButton: Locator;
+
+  /** Named scopes within the form. Empty unless a subclass registers some. */
+  private readonly regions: Record<string, Locator> = {};
+
+  /**
+   * Region field() falls back to when no explicit `region` option is passed.
+   * Set by a subclass whose form has one dominant region for ordinary
+   * content fields (e.g. NodeFormPage sets this to "main").
+   */
+  protected defaultFieldRegion?: string;
 
   constructor(
     page: Page,
@@ -42,6 +54,11 @@ export abstract class EntityFormPage extends BasePage {
     this.saveButton = page.locator(saveButtonSelector);
     this.deleteButton = page.locator(deleteButtonSelector);
     this.deleteConfirmButton = page.locator("#edit-submit");
+  }
+
+  /** Registers a named region so field() can be scoped to it. */
+  protected registerRegion(name: string, selector: string): void {
+    this.regions[name] = this.page.locator(selector);
   }
 
   async save(): Promise<void> {
@@ -78,42 +95,31 @@ export abstract class EntityFormPage extends BasePage {
 
   /**
    * Access a field by its Drupal machine name (e.g. "title", "field_tags",
-   * "status", "moderation_state") plus the widget type it's rendered as.
-   *
-   * This is the ONLY way form pages expose fields — there is no per-bundle
-   * hardcoding. If a field doesn't follow the default locator convention,
-   * pass `{ locator }` explicitly.
+   * "status") plus the widget type it's rendered as. The field CLASS owns
+   * how it locates itself — this method only resolves the search scope
+   * (region) and hands off to the factory.
    */
-  field(name: string, kind: "text" | "textarea" | "ckeditor" | "date", options?: FieldLocatorOptions): TextDrupalField;
-  field(name: string, kind: "checkbox", options?: FieldLocatorOptions): CheckboxDrupalField;
   field(
     name: string,
     kind: FieldKind,
     options: FieldLocatorOptions = {}
-  ): TextDrupalField | CheckboxDrupalField {
-    const locator = options.locator ? this.page.locator(options.locator) : this.resolveFieldLocator(name);
-    return createDrupalField(locator, kind as never);
+  ): TextDrupalField {
+    const scope = this.scopeFor(options.region);
+    const explicitLocator = options.locator ? this.page.locator(options.locator) : undefined;
+    return createDrupalField(scope, name, kind, explicitLocator);
   }
 
-  /**
-   * Whether a field with this machine name is present on the current form.
-   * Use this before touching a field that isn't guaranteed to exist on every
-   * bundle (e.g. "does this content type even have a body field").
-   */
-  async hasField(name: string, options: FieldLocatorOptions = {}): Promise<boolean> {
-    const locator = options.locator ? this.page.locator(options.locator) : this.resolveFieldLocator(name);
-    return (await locator.count()) > 0;
-  }
-
-  private resolveFieldLocator(name: string): Locator {
-    const dashed = name.replace(/_/g, "-");
-    return this.page.locator(
-      [
-        `[data-drupal-selector='edit-${dashed}-0-value']`,
-        `[data-drupal-selector='edit-${dashed}']`,
-        `.field--name-${name}`,
-        `#edit-${dashed}`,
-      ].join(", ")
-    );
+  /** Resolves which scope (a registered region, or the whole page) a lookup should run against. */
+  private scopeFor(region?: string): Page | Locator {
+    const effectiveRegion = region ?? this.defaultFieldRegion;
+    if (!effectiveRegion) {
+      return this.page;
+    }
+    const scope = this.regions[effectiveRegion];
+    if (!scope) {
+      const known = Object.keys(this.regions).join(", ") || "(none registered)";
+      throw new Error(`Unknown form region "${effectiveRegion}". Registered regions: ${known}`);
+    }
+    return scope;
   }
 }

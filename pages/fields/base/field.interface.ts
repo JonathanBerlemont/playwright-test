@@ -10,6 +10,3 @@ export interface DrupalField<T = string> {
 }
 
 export type TextDrupalField = DrupalField<string>;
-export type CheckboxDrupalField = DrupalField<boolean>;
-export type RadioDrupalField = DrupalField<boolean>;
-export type SelectDrupalField = DrupalField<string>;
