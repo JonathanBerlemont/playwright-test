@@ -2,6 +2,7 @@ import { type Page, type Locator } from "@playwright/test";
 import { BasePage } from "./base-page";
 import {
   createDrupalField,
+  type CKEditorDrupalField,
   type FieldKind,
   type TextDrupalField,
 } from "../fields/base/field-factory";
@@ -101,9 +102,19 @@ export abstract class EntityFormPage extends BasePage {
    */
   field(
     name: string,
+    kind: "text",
+    options?: FieldLocatorOptions
+  ): TextDrupalField;
+  field(
+    name: string,
+    kind: "ckeditor",
+    options?: FieldLocatorOptions
+  ): CKEditorDrupalField;
+  field(
+    name: string,
     kind: FieldKind,
     options: FieldLocatorOptions = {}
-  ): TextDrupalField {
+  ): TextDrupalField | CKEditorDrupalField {
     const scope = this.scopeFor(options.region);
     const explicitLocator = options.locator ? this.page.locator(options.locator) : undefined;
     return createDrupalField(scope, name, kind, explicitLocator);

@@ -9,4 +9,11 @@ export interface DrupalField<T = string> {
   getLabel(): Promise<string>;
 }
 
-export type TextDrupalField = DrupalField<string>;
+export interface TextDrupalField extends DrupalField<string> {}
+
+export interface CKEditorDrupalField extends DrupalField<string> {
+  setTextFormat(format: string): Promise<void>;
+  getTextFormat(): Promise<string>;
+  pressButton(button: string): Promise<void>;
+  pressbutton(button: string): Promise<void>;
+}

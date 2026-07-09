@@ -24,12 +24,16 @@ test.describe("Basic Pages CRUD as a content editor", () => {
     await nodePage.gotoAddContent("page");
 
     await nodePage.field("title", "text").fill(row.title);
+    await nodePage.field("body", "ckeditor").pressButton('Source');
     await nodePage.field("body", "ckeditor").fill(row.body);
 
     await nodePage.saveAndExpect();
 
     await expect(page.locator("body")).toContainText(row.title);
-    await expect(page.locator("body")).toContainText(row.body);
+
+    // Need to remove the tags to assert what's actually visible
+    const expectedBodyText = row.body.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+    await expect(page.locator("body")).toContainText(expectedBodyText);
   });
 
   test("as a content editor, I can edit a basic page", async ({ page }) => {

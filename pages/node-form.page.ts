@@ -10,8 +10,4 @@ export class NodeFormPage extends EntityFormPage {
   async gotoAddContent(contentType: string): Promise<void> {
     await this.page.goto(`/node/add/${contentType}`);
   }
-
-  async gotoEditNode(nodeId: number): Promise<void> {
-    await this.page.goto(`/node/${nodeId}/edit`);
-  }
 }
