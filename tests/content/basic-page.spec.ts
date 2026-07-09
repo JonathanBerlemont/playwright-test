@@ -44,8 +44,17 @@ test.describe("Basic Pages CRUD as a content editor", () => {
     await expect(page.locator(".page-title")).toContainText(row.title);
     await expect(await nodePage.field("title", "text").getValue()).toBe(row.title);
     await nodePage.field("title", "text").fill(row.title + " (edited)");
-    await nodePage.saveAndExpect();
+    await nodePage.saveAndExpect(row.title + " (edited)");
+  });
 
-    await overviewPage.expectSuccess(row.title + " (edited)");
+  test("as a content editor, I can delete a basic page", async ({ page }) => {
+    const overviewPage = new ContentOverviewPage(page);
+    const row = rows[0];
+
+    await overviewPage.goto();
+    await overviewPage.filterByTitle(row.title);
+    await overviewPage.clickDeleteInRow(row.title);
+    await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
+    await overviewPage.expectSuccess('has been deleted')
   });
 });

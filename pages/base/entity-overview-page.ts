@@ -32,6 +32,7 @@ export abstract class EntityOverviewPage extends BasePage {
   }
 
   async clickDeleteInRow(title: string): Promise<void> {
+    await this.getRowByTitle(title).locator('li.dropbutton-toggle').getByRole("button").click(); // opens dropdown
     await this.getRowByTitle(title).locator('li.delete').getByRole("link", { name: "Delete" }).click();
   }
 }
