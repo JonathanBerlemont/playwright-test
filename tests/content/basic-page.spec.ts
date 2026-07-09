@@ -6,7 +6,7 @@ import { NodeFormPage } from "../../pages/node-form.page";
 interface PageFixtureRow {
   title: string;
   body: string;
-  published: string; // CSV values are always strings — coerce before using as boolean
+  published: string;
 }
 
 const rows = loadCsv("content/pages.fixtures.csv");

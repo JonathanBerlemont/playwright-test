@@ -9,10 +9,9 @@ export class CKEditorField extends DrupalFieldBase<string> {
   constructor(scope: Locator | Page, name: string, explicitLocator?: Locator) {
     super(scope, name, explicitLocator);
 
-    const rootLocator = explicitLocator ?? this.locator;
-    this.editable = rootLocator.locator(".ck-editor__editable");
-    this.formatSelect = rootLocator.locator("select.filter-list");
-    this.toolbar = rootLocator.locator(".ck-toolbar");
+    this.editable = this.locator.locator(".ck-editor__editable");
+    this.formatSelect = this.locator.locator("select.filter-list");
+    this.toolbar = this.locator.locator(".ck-toolbar");
   }
 
   protected buildLocator(scope: Locator | Page, name: string): Locator {

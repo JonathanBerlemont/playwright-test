@@ -2,6 +2,7 @@ import { type Page, type Locator } from "@playwright/test";
 import { BasePage } from "./base-page";
 import {
   createDrupalField,
+  type CheckboxDrupalField,
   type CKEditorDrupalField,
   type FieldKind,
   type TextDrupalField,
@@ -112,12 +113,17 @@ export abstract class EntityFormPage extends BasePage {
   ): CKEditorDrupalField;
   field(
     name: string,
+    kind: "checkbox",
+    options?: FieldLocatorOptions
+  ): CheckboxDrupalField;
+  field(
+    name: string,
     kind: FieldKind,
     options: FieldLocatorOptions = {}
-  ): TextDrupalField | CKEditorDrupalField {
+  ): TextDrupalField | CKEditorDrupalField | CheckboxDrupalField {
     const scope = this.scopeFor(options.region);
     const explicitLocator = options.locator ? this.page.locator(options.locator) : undefined;
-    return createDrupalField(scope, name, kind, explicitLocator);
+    return createDrupalField(scope, name, kind as never, explicitLocator);
   }
 
   /** Resolves which scope (a registered region, or the whole page) a lookup should run against. */

@@ -11,9 +11,10 @@ export interface DrupalField<T = string> {
 
 export interface TextDrupalField extends DrupalField<string> {}
 
+export interface CheckboxDrupalField extends DrupalField<boolean> {}
+
 export interface CKEditorDrupalField extends DrupalField<string> {
   setTextFormat(format: string): Promise<void>;
   getTextFormat(): Promise<string>;
   pressButton(button: string): Promise<void>;
-  pressbutton(button: string): Promise<void>;
 }

@@ -1,2 +1,4 @@
-title;body;published
-Test Basic Page;This is some body with <strong>bold text</strong>;true
+description;title;body;published;expected
+Basic page published;Basic Page 1;This is some body with <strong>bold text</strong>;true;success;
+Basic page draft;Basic Page 2;Here is some other kind of body with <em>italic text this time</em>;false;success;
+Basic page no title;;Some body;true;error;
