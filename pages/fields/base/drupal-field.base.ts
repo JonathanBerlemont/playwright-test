@@ -10,7 +10,7 @@ import { type DrupalField } from "./field.interface";
  * generic "find a field by name" strategy here. That responsibility lives
  * on the field class that actually knows its own structure.
  */
-export abstract class DrupalFieldBase<T> implements DrupalField<T> {
+export abstract class DrupalFieldBase<TInput, TOutput = TInput> implements DrupalField<TInput, TOutput> {
   readonly locator: Locator;
 
   constructor(scope: Locator | Page, name: string, explicitLocator?: Locator) {
@@ -22,8 +22,8 @@ export abstract class DrupalFieldBase<T> implements DrupalField<T> {
   /** Resolves this field's locator from its Drupal machine name, within `scope`. */
   protected abstract buildLocator(scope: Locator | Page, name: string): Locator;
 
-  abstract fill(value: T): Promise<void>;
-  abstract getValue(): Promise<T>;
+  abstract fill(value: TInput): Promise<void>;
+  abstract getValue(): Promise<TOutput>;
   abstract getError(): Promise<string | null>;
   abstract clear(): Promise<void>;
 

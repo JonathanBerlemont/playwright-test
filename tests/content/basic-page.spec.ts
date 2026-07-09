@@ -3,13 +3,15 @@ import { test, expect } from "@playwright/test";
 import { ContentOverviewPage } from "../../pages/content-overview.page";
 import { NodeFormPage } from "../../pages/node-form.page";
 
-interface PageFixtureRow {
+type PageFixtureRow = {
+  description: string;
   title: string;
   body: string;
-  published: string;
-}
+  published: "true" | "false";
+  expected: "success" | "error";
+};
 
-const rows = loadCsv("content/pages.fixtures.csv");
+const rows = loadCsv<PageFixtureRow>("content/pages.fixtures.csv");
 
 test.describe("Basic Pages CRUD as a content editor", () => {
   test.beforeEach(async ({ page }) => {
@@ -17,24 +19,30 @@ test.describe("Basic Pages CRUD as a content editor", () => {
     await nodePage.login(process.env.EDITOR_USER!, process.env.EDITOR_PASS!);
   });
 
-  test("as a content editor, I can create a basic page", async ({ page }) => {
-    const nodePage = new NodeFormPage(page);
-    const row = rows[0];
+  // Test CSV defined scenarios for creating pages. Each row in the CSV is a separate test.
+  for (const row of rows) {
+    test(row.description, async ({ page }) => {
+      const nodePage = new NodeFormPage(page);
 
-    await nodePage.gotoAddContent("page");
+      await nodePage.gotoAddContent("page");
 
-    await nodePage.field("title", "text").fill(row.title);
-    await nodePage.field("body", "ckeditor").pressButton('Source');
-    await nodePage.field("body", "ckeditor").fill(row.body);
+      await nodePage.field("title", "text").fill(row.title);
+      await nodePage.field("body", "ckeditor").fill(row.body);
+      await nodePage.field("status", "checkbox", { region: "footer" }).fill(row.published);
 
-    await nodePage.saveAndExpect();
+      if (row.expected === "success") {
+        await nodePage.saveAndExpect();
+        await expect(page.locator("body")).toContainText(row.title);
+        await expect(page.locator("body")).toContainText(row.body);
 
-    await expect(page.locator("body")).toContainText(row.title);
-
-    // Need to remove the tags to assert what's actually visible
-    const expectedBodyText = row.body.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
-    await expect(page.locator("body")).toContainText(expectedBodyText);
-  });
+        if (row.published === "false") {
+          await expect(page.locator("article.node.node--unpublished").first()).toBeVisible();
+        }
+      } else {
+        await nodePage.saveAndExpectError();
+      }
+    });
+  }
 
   test("as a content editor, I can edit a basic page", async ({ page }) => {
     const overviewPage = new ContentOverviewPage(page);
@@ -58,7 +66,7 @@ test.describe("Basic Pages CRUD as a content editor", () => {
     await overviewPage.goto();
     await overviewPage.filterByTitle(row.title);
     await overviewPage.clickDeleteInRow(row.title);
-    await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
-    await overviewPage.expectSuccess('has been deleted')
+    await page.getByRole("dialog").getByRole("button", { name: "Delete" }).click();
+    await overviewPage.expectSuccess("has been deleted");
   });
 });

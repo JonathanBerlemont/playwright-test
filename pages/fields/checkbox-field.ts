@@ -2,42 +2,44 @@ import { type Locator, type Page } from "@playwright/test";
 import { DrupalFieldBase } from "./base/drupal-field.base";
 import { type CheckboxDrupalField } from "./base/field.interface";
 
-export class CheckboxField extends DrupalFieldBase<boolean> implements CheckboxDrupalField {
+export class CheckboxField extends DrupalFieldBase<"true" | "false", boolean> implements CheckboxDrupalField {
   protected buildLocator(scope: Locator | Page, name: string): Locator {
     const dashed = name.replace(/_/g, "-");
-    // Covers Drupal's boolean widget (edit-field-published-value) and core
-    // fields like the Published status checkbox (edit-status-value).
+    // Resolve the actual checkbox input (not its wrapper), since setChecked()
+    // only works on checkable input elements.
     return scope.locator(
       [
-        `[data-drupal-selector='edit-${dashed}-value']`,
-        `[data-drupal-selector='edit-${dashed}']`,
-        `#edit-${dashed}-value`,
-        `#edit-${dashed}`,
+        `input[type='checkbox'][data-drupal-selector='edit-${dashed}-value']`,
+        `input[type='checkbox'][data-drupal-selector='edit-${dashed}']`,
+        `input[type='checkbox']#edit-${dashed}-value`,
+        `input[type='checkbox']#edit-${dashed}`,
+        `[data-drupal-selector='edit-${dashed}-value'] input[type='checkbox']`,
+        `[data-drupal-selector='edit-${dashed}'] input[type='checkbox']`,
+        `#edit-${dashed}-value input[type='checkbox']`,
+        `#edit-${dashed} input[type='checkbox']`,
       ].join(", ")
     );
   }
 
-  async fill(value: boolean): Promise<void> {
-    await this.locator.setChecked(value);
+  private checkboxLocator(): Locator {
+    return this.locator.first();
+  }
+
+  async fill(value: "true" | "false"): Promise<void> {
+    const booleanValue = value === "true";
+    await this.checkboxLocator().setChecked(booleanValue);
   }
 
   async getValue(): Promise<boolean> {
-    return this.locator.isChecked();
+    return this.checkboxLocator().isChecked();
   }
 
   async getError(): Promise<string | null> {
-    const error = this.locator
-      .locator(
-        "xpath=ancestor::*[contains(concat(' ', normalize-space(@class), ' '), ' form-item ')][1]//*[contains(@class, 'form-item--error-message')]"
-      )
-      .first();
+    const error = this.locator.locator(".form-item--error-message").first();
     return (await error.count()) > 0 ? error.innerText() : null;
   }
 
   async clear(): Promise<void> {
-    await this.locator.setChecked(false);
+    await this.checkboxLocator().setChecked(false);
   }
-
-  // No getLabel() override — Drupal checkboxes have a real id with a
-  // label[for=id] next to them, so the base class's default lookup applies.
 }

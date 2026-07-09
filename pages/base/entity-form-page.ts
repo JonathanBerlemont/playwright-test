@@ -1,4 +1,4 @@
-import { type Page, type Locator } from "@playwright/test";
+import { type Page, type Locator, expect } from "@playwright/test";
 import { BasePage } from "./base-page";
 import {
   createDrupalField,
@@ -16,11 +16,10 @@ export interface FieldLocatorOptions {
    */
   locator?: string;
   /**
-   * Constrain the lookup to a named region registered via registerRegion()
-   * (e.g. "main", "footer"). Falls back to defaultFieldRegion if not given,
-   * or the whole page if neither is set.
+   * Optional form region override. Defaults to the main region.
+   * Supported values are "main", "secondary", and "footer".
    */
-  region?: string;
+  region?: "main" | "secondary" | "footer";
 }
 
 /**
@@ -76,6 +75,34 @@ export abstract class EntityFormPage extends BasePage {
   /** Submits the form and asserts an error status message appears (e.g. validation failure). */
   async saveAndExpectError(errorText?: string): Promise<void> {
     await this.save();
+
+    const nativeValidationMessage = await this.page.evaluate(() => {
+      const active = document.activeElement as
+        | HTMLInputElement
+        | HTMLTextAreaElement
+        | HTMLSelectElement
+        | null;
+
+      if (!active || typeof active.checkValidity !== "function") {
+        return null;
+      }
+
+      if (active.checkValidity()) {
+        return null;
+      }
+
+      return active.validationMessage || "";
+    });
+
+    if (nativeValidationMessage !== null) {
+      if (errorText) {
+        await expect(nativeValidationMessage).toContain(errorText);
+      } else {
+        await expect(nativeValidationMessage).not.toBe("");
+      }
+      return;
+    }
+
     await this.expectError(errorText);
   }
 
@@ -126,17 +153,11 @@ export abstract class EntityFormPage extends BasePage {
     return createDrupalField(scope, name, kind as never, explicitLocator);
   }
 
-  /** Resolves which scope (a registered region, or the whole page) a lookup should run against. */
-  private scopeFor(region?: string): Page | Locator {
-    const effectiveRegion = region ?? this.defaultFieldRegion;
-    if (!effectiveRegion) {
-      return this.page;
-    }
-    const scope = this.regions[effectiveRegion];
-    if (!scope) {
-      const known = Object.keys(this.regions).join(", ") || "(none registered)";
-      throw new Error(`Unknown form region "${effectiveRegion}". Registered regions: ${known}`);
-    }
+  /** Resolves form scope from fixed Drupal layout regions. */
+  private scopeFor(region?: "main" | "secondary" | "footer"): Page | Locator {
+    const effectiveRegion = region ?? "main";
+    const scope = this.page.locator(`.layout-region.layout-region--${effectiveRegion}`);
+
     return scope;
   }
 }
